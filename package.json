@@ -1,0 +1,24 @@
+{
+  "name": "remapper",
+  "version": "0.0.1",
+  "description": "Remap one URL to another",
+  "author": "Nebojsa Sabovic <nsabovic@gmail.com>",
+  "keywords": [
+    "url",
+    "parse",
+    "remap"
+  ],
+  "engines": {
+    "node": ">=0.8.0",
+    "npm": ">=1.1.9"
+  },
+  "main": "lib/remapper.js",
+  "scripts": {
+    "test": "rm -rf lib-cov && jshint lib/*.js test/*.js && mocha -R spec",
+    "coverage": "rm -rf lib-cov && jscoverage lib lib-cov && mocha -R html-cov > cov.html"
+  },
+  "devDependencies": {
+    "mocha": "~1.0",
+    "jshint": ">= 0.7.0"
+  }
+}
