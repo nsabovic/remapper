@@ -1,4 +1,4 @@
-/*global describe:false it:false beforeEach:false afterEach:false */
+/*global describe:false it:false xit:false beforeEach:false afterEach:false */
 "use strict";
 
 var assert = require('assert');
@@ -21,80 +21,75 @@ describe('Remapper', function() {
   describe('map', function() {
     it('actually remaps', function() {
       r = new Remapper([{
-        source: '/profile',
-        dest: '/#profile'
+        source: '/src',
+        destinations: [ {
+          dest: '/#dest' } ]
       }]);
-      assert.equal('http://t.co/#profile', r.map('http://t.co/profile').url);
-      assert.equal(null, r.map('http://t.co/unmatched'));
+      assert.equal('/#dest', r.map('/src').url);
+      assert.equal(null, r.map('/unmatched').url);
     });
     it('requires config flags', function() {
       r = new Remapper([{
         source: '/src',
-        dest: '/dest',
-        config: ['knob1', 'group1.knob2']
+        config: ['knob1'],
+        destinations: [ {
+          dest: '/dest' } ]
       }]);
-      var c1 = { 'knob1' : true, "group1": { 'knob2': 'string' } };
-      var c2 = { 'knob1' : false, "group1": { 'knob2': 'string' } };
-      var c3 = { 'knob1' : true };
-      assert.equal('http://t.co/dest', r.map('http://t.co/src', c1).url);
-      assert.equal(null, r.map('http://t.co/src', c2));
-      assert.equal(null, r.map('http://t.co/src', c3));
-      assert.equal(null, r.map('http://t.co/unmatched', c1));
+      var c1 = { 'knob1' : true };
+      var c2 = { 'knob1' : false };
+      var c3 = { };
+      assert.equal('/dest', r.map('/src', c1).url);
+      assert.equal(null, r.map('/src', c2).url);
+      assert.equal(null, r.map('/src', c3).url);
+      assert.equal(null, r.map('/unmatched', c1).url);
     });
     it('requires sourceParams', function() {
       r = new Remapper([{
         source: '/src',
-        dest: '/dest',
-        sourceParams: [ 'p' ]
+        destinations: [ {
+          sourceParams: [ 'p' ],
+          dest: '/dest' } ]
       }]);
-      assert.equal('http://t.co/dest', r.map('http://t.co/src?p=v').url);
-      assert.equal(null, r.map('http://t.co/src'));
+      assert.equal('/dest', r.map('/src?p=v').url);
+      assert.equal(null, r.map('/src').url);
     });
     it('supports param embedding in dest', function() {
       r = new Remapper([{
         source: '/src',
-        dest: '/dest/{p}'
+        destinations: [ {
+          sourceParams: [ 'p' ],
+          dest: '/dest/{p}' } ]
       }]);
-      assert.equal('http://t.co/dest/v', r.map('http://t.co/src?p=v').url);
-      assert.equal('http://t.co/dest/', r.map('http://t.co/src').url);
+      assert.equal('/dest/v', r.map('/src?p=v').url);
+      assert.equal(null, r.map('http://t.co/src').url);
     });
-    it('supports param embedding in query params', function() {
+    it('supports allParam embedding in dest', function() {
       r = new Remapper([{
         source: '/src',
-        dest: '/dest',
-        destParams: {
-          'd': '{p}'
-        }
+        destinations: [ {
+          dest: '/dest?{allParams}' } ]
       }]);
-      assert.equal('http://t.co/dest?d=v', r.map('http://t.co/src?p=v').url);
+      assert.equal('/dest?p=v&r=q', r.map('/src?p=v&r=q').url);
     });
     it('supports regex embedding in dest', function() {
       r = new Remapper([{
         source: '/src/(.*)',
-        dest: '/dest/{1}'
+        destinations: [ {
+          dest: '/dest/{1}' } ]
       }]);
-      assert.equal('http://t.co/dest/x', r.map('http://t.co/src/x').url);
+      assert.equal('/dest/x', r.map('/src/x').url);
     });
-    it('supports regex embedding in query params', function() {
+    it('supports multiple destinations based on params', function() {
       r = new Remapper([{
         source: '/src/(.*)',
-        dest: '/dest',
-        destParams: {
-          'd': '{1}'
-        }
+        destinations: [ {
+          sourceParams: [ 'p' ],
+          dest: '/withp'
+        }, {
+          dest: '/withoutp' } ]
       }]);
-      assert.equal('http://t.co/dest?d=v', r.map('http://t.co/src/v').url);
-    });
-    it('supports passing query params', function() {
-      r = new Remapper([{
-        source: '/s',
-        dest: '/d',
-        destParams: {
-          'd': null
-        },
-        forwardParams: true
-      }]);
-      assert.equal('http://t.co/d?p=v', r.map('http://t.co/s?p=v&d=v').url);
+      assert.equal('/withp', r.map('/src/x?p=1').url);
+      assert.equal('/withoutp', r.map('/src/x').url);
     });
   });
 });

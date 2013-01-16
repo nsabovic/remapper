@@ -8,46 +8,35 @@ An example rule:
 
         {
           source: '/source/(.*)',
-          dest: '/#dest/{whoopsie}/{1}',
+          destinations: [ {
+            dest: '/#dest/{whoopsie}/{1}/{whoopsie}?{allParams}',
 
-          // Everything bellow is optional:
-          config: ['test.whatever', 'feature.another'],
-          sourceParams: ['whoopsie', 'mobile'],
-          destParams: {
-            'rest': '{1}',
-            'deleteme': null
-          },
-          forwardParams: true,
-          data: { pageKey: 'somethingrather' }
+            // Everything bellow is optional:
+            config: ['featureFlag'],
+            sourceParams: ['whoopsie', 'mobile'],
+            data: { extraData: 1 }
+          } ]
         }
 
 Source is a regexp that, when matched, will be converted to dest. Dest can refer
-to query params and numbered capture groups from source.
+to query params and numbered capture groups from source, and it can also use
+special word `allParams` which are all the query params from the source url.
 
 If config is present, it will test for existence of given keys in the passed
 config hash in order to match the rule.
 
 `sourceParams` is the list of required query parameters in the source string,
 
-`destParams` is the list of query parameters output. It also supports referenes.
-If `forwardParams` is true, the list of parameters starts from source parameters
-and adds `destParams`, otherwise it's just `destParams`. Setting a param to
-null deletes it from the original list.
-
 `data` is whatever data you want returned when this route is matched.
 
 Soo:
 
-        var r = new Router([{ source: ..., dest: ... }, ... ]);
+        var r = new Router([{ source: ..., destinations: ... }, ... ]);
         var result = r.map('http://whatever/source', {
           test: {
             whatever: true
           }
         });
-        if (result === null) {
-          console.log('Nothing.');
-        } else {
-          console.log(result.url);
-          console.log(result.data);
-        }
+        console.log(result.url);
+        console.log(result.data);
 
