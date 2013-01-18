@@ -9,7 +9,7 @@ An example rule:
         {
           source: '/source/(.*)',
           destinations: [ {
-            dest: '/#dest/{whoopsie}/{1}/{whoopsie}?{allParams}',
+            dest: '/#dest/{whoopsie}/{1|this|that}/{whoopsie}?{allParams}',
 
             // Everything bellow is optional:
             config: ['featureFlag'],
@@ -21,6 +21,8 @@ An example rule:
 Source is a regexp that, when matched, will be converted to dest. Dest can refer
 to query params and numbered capture groups from source, and it can also use
 special word `allParams` which are all the query params from the source url.
+You can do regexp replaces on these too, with the pipe(|). For example,
+{woot|(a)|b$1} will return the param woot with all a's replaced with ba's.
 
 If config is present, it will test for existence of given keys in the passed
 config hash in order to match the rule.

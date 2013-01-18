@@ -10,7 +10,7 @@ try {
 }
 
 describe('Remapper', function() {
-  var r;
+  var r, c1, c2, c3;
   describe('constructor', function() {
     it('complains on invalid config', function() {
       assert.throws(function() {
@@ -35,9 +35,24 @@ describe('Remapper', function() {
         destinations: [ {
           dest: '/dest' } ]
       }]);
-      var c1 = { 'knob1' : true };
-      var c2 = { 'knob1' : false };
-      var c3 = { };
+      c1 = { 'knob1' : true };
+      c2 = { 'knob1' : false };
+      c3 = { };
+      assert.equal('/dest', r.map('/src', c1).url);
+      assert.equal(null, r.map('/src', c2).url);
+      assert.equal(null, r.map('/src', c3).url);
+      assert.equal(null, r.map('/unmatched', c1).url);
+    });
+    it('config flags can be nested', function() {
+      r = new Remapper([{
+        source: '/src',
+        config: ['knob1', 'knob2.nested'],
+        destinations: [ {
+          dest: '/dest' } ]
+      }]);
+      c1 = { 'knob1' : true, 'knob2': { 'nested': true } };
+      c2 = { 'knob1' : true, 'knob2': true };
+      c3 = { };
       assert.equal('/dest', r.map('/src', c1).url);
       assert.equal(null, r.map('/src', c2).url);
       assert.equal(null, r.map('/src', c3).url);
@@ -62,6 +77,15 @@ describe('Remapper', function() {
       }]);
       assert.equal('/dest/v', r.map('/src?p=v').url);
       assert.equal(null, r.map('http://t.co/src').url);
+    });
+    it('supports regex replace in param embedding', function() {
+      r = new Remapper([{
+        source: '/src',
+        destinations: [ {
+          sourceParams: [ 'p' ],
+          dest: '/dest/{p|a(b)c|$1}' } ]
+      }]);
+      assert.equal('/dest/b', r.map('/src?p=abc').url);
     });
     it('supports allParam embedding in dest', function() {
       r = new Remapper([{
