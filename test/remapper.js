@@ -23,97 +23,94 @@ describe('Remapper', function() {
       r = new Remapper([{
         source: '/src',
         destinations: [ {
-          dest: '/#dest' } ]
+          path: '/#dest' } ]
       }]);
-      assert.equal('/#dest', r.map('/src').url);
-      assert.equal(null, r.map('/unmatched').url);
+      assert.equal('/#dest', r.map('/src').path);
+      assert.equal(null, r.map('/unmatched'));
     });
-    it('requires config flags', function() {
+    it('toplevel required is respected', function() {
       r = new Remapper([{
         source: '/src',
-        config: ['knob1'],
+        required: ['knob1'],
         destinations: [ {
-          dest: '/dest' } ]
+          path: '/dest' } ]
       }]);
       c1 = { 'knob1' : true };
       c2 = { 'knob1' : false };
       c3 = { };
-      assert.equal('/dest', r.map('/src', c1).url);
-      assert.equal(null, r.map('/src', c2).url);
-      assert.equal(null, r.map('/src', c3).url);
-      assert.equal(null, r.map('/unmatched', c1).url);
+      assert.equal('/dest', r.map('/src', c1).path);
+      assert.equal(null, r.map('/src', c2));
+      assert.equal(null, r.map('/src', c3));
+      assert.equal(null, r.map('/unmatched', c1));
     });
-    it('config flags can be nested', function() {
+    it('required flags can be nested', function() {
       r = new Remapper([{
         source: '/src',
-        config: ['knob1', 'knob2.nested'],
+        required: ['knob1', 'knob2.nested'],
         destinations: [ {
-          dest: '/dest' } ]
+          path: '/dest' } ]
       }]);
       c1 = { 'knob1' : true, 'knob2': { 'nested': true } };
       c2 = { 'knob1' : true, 'knob2': true };
       c3 = { };
-      assert.equal('/dest', r.map('/src', c1).url);
-      assert.equal(null, r.map('/src', c2).url);
-      assert.equal(null, r.map('/src', c3).url);
-      assert.equal(null, r.map('/unmatched', c1).url);
+      assert.equal('/dest', r.map('/src', c1).path);
+      assert.equal(null, r.map('/src', c2));
+      assert.equal(null, r.map('/src', c3));
+      assert.equal(null, r.map('/unmatched', c1));
     });
-    it('requires sourceParams', function() {
+    it('nested required is respected', function() {
       r = new Remapper([{
         source: '/src',
         destinations: [ {
-          sourceParams: [ 'p' ],
-          dest: '/dest' } ]
+          required: ['knob1'],
+          path: '/dest' } ]
       }]);
-      assert.equal('/dest', r.map('/src?p=v').url);
-      assert.equal(null, r.map('/src').url);
+      c1 = { 'knob1' : true };
+      c2 = { 'knob1' : false };
+      c3 = { };
+      assert.equal('/dest', r.map('/src', c1).path);
+      assert.equal(null, r.map('/src', c2));
+      assert.equal(null, r.map('/src', c3));
+      assert.equal(null, r.map('/unmatched', c1));
     });
-    it('supports param embedding in dest', function() {
+    it('supports embedding', function() {
       r = new Remapper([{
         source: '/src',
         destinations: [ {
-          sourceParams: [ 'p' ],
-          dest: '/dest/{p}' } ]
+          required: [ 'p' ],
+          path: '/dest/{p}' } ]
       }]);
-      assert.equal('/dest/v', r.map('/src?p=v').url);
-      assert.equal(null, r.map('http://t.co/src').url);
+      assert.equal('/dest/v', r.map('/src', {p:'v'}).path);
+      assert.equal(null, r.map('http://t.co/src'));
     });
-    it('supports regex replace in param embedding', function() {
+    it('supports regex replace in embedding', function() {
       r = new Remapper([{
         source: '/src',
         destinations: [ {
-          sourceParams: [ 'p' ],
-          dest: '/dest/{p|a(b)c|$1}' } ]
+          required: [ 'p' ],
+          path: '/dest/{p|a(b)c|$1}' } ]
       }]);
-      assert.equal('/dest/b', r.map('/src?p=abc').url);
+      assert.equal('/dest/b', r.map('/src', {p:'abc'}).path);
     });
-    it('supports allParam embedding in dest', function() {
-      r = new Remapper([{
-        source: '/src',
-        destinations: [ {
-          dest: '/dest?{allParams}' } ]
-      }]);
-      assert.equal('/dest?p=v&r=q', r.map('/src?p=v&r=q').url);
-    });
-    it('supports regex embedding in dest', function() {
+    it('supports regex embedding', function() {
       r = new Remapper([{
         source: '/src/(.*)',
         destinations: [ {
-          dest: '/dest/{1}' } ]
+          path: '/dest/{1}' } ]
       }]);
-      assert.equal('/dest/x', r.map('/src/x').url);
+      assert.equal('/dest/x', r.map('/src/x').path);
     });
-    it('supports multiple destinations based on params', function() {
+    it('supports multiple destinations based on required', function() {
       r = new Remapper([{
         source: '/src/(.*)',
         destinations: [ {
-          sourceParams: [ 'p' ],
-          dest: '/withp'
+          required: [ 'p' ],
+          path: '/withp'
         }, {
-          dest: '/withoutp' } ]
+          path: '/withoutp' } ]
       }]);
-      assert.equal('/withp', r.map('/src/x?p=1').url);
-      assert.equal('/withoutp', r.map('/src/x').url);
+      assert.equal('/withp', r.map('/src/x', {p: '1'}).path);
+      assert.equal('/withoutp', r.map('/src/x').path);
     });
   });
 });
