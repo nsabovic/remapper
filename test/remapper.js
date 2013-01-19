@@ -83,6 +83,17 @@ describe('Remapper', function() {
       assert.equal('/dest/v', r.map('/src', {p:'v'}).path);
       assert.equal(null, r.map('http://t.co/src'));
     });
+    it('supports nested embedding', function() {
+      r = new Remapper([{
+        source: '/src',
+        destinations: [ {
+          required: [ 'p' ],
+          query: {
+            nested: '/dest/{p}' } } ]
+      }]);
+      assert.equal('/dest/v', r.map('/src', {p:'v'}).query.nested);
+      assert.equal(null, r.map('http://t.co/src'));
+    });
     it('supports regex replace in embedding', function() {
       r = new Remapper([{
         source: '/src',
