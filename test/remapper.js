@@ -31,11 +31,11 @@ describe('Remapper', function() {
     it('toplevel required is respected', function() {
       r = new Remapper([{
         source: '/src',
-        required: ['knob1'],
+        required: [ 'lix.profile.mobile.edit.redirect' ],
         destinations: [ {
           path: '/dest' } ]
       }]);
-      c1 = { 'knob1' : true };
+      c1 = {lix: { profile: { mobile: { edit: { redirect: true }}}}};
       c2 = { 'knob1' : false };
       c3 = { };
       assert.equal('/dest', r.map('/src', c1).path);
@@ -43,7 +43,7 @@ describe('Remapper', function() {
       assert.deepEqual({}, r.map('/src', c3));
       assert.deepEqual({}, r.map('/unmatched', c1));
     });
-    it('required flags can be nested', function() {
+    it('required flags can refer to child properties', function() {
       r = new Remapper([{
         source: '/src',
         required: ['knob1', 'knob2.nested'],
@@ -72,6 +72,31 @@ describe('Remapper', function() {
       assert.deepEqual({}, r.map('/src', c2));
       assert.deepEqual({}, r.map('/src', c3));
       assert.deepEqual({}, r.map('/unmatched', c1));
+    });
+    it('required can be a function', function() {
+      r = new Remapper([{
+        source: '/src',
+        required: function(item) { return item.knob1; },
+        destinations: [ {
+          path: '/dest' } ]
+      }]);
+      c1 = { 'knob1' : true };
+      c2 = { };
+      assert.equal('/dest', r.map('/src', c1).path);
+      assert.deepEqual({}, r.map('/src', c2));
+      assert.deepEqual({}, r.map('/unmatched', c1));
+    });
+    it('decorate function is called', function() {
+      r = new Remapper([{
+        source: '/src',
+        destinations: [ {
+          path: '/dest',
+          decorate: function(i, out) {
+            out.path += i.ext;
+          } } ]
+      }]);
+      c1 = { 'ext' : 1 };
+      assert.equal('/dest1', r.map('/src', c1).path);
     });
     it('supports embedding', function() {
       r = new Remapper([{
@@ -132,6 +157,23 @@ describe('Remapper', function() {
       }]);
       assert.equal('/withp', r.map('/src/x', {p: '1'}).path);
       assert.equal('/withoutp', r.map('/src/x').path);
+    });
+    it('falls through if the first source cannot be satisfied', function() {
+      r = new Remapper([{
+        source: '/src/(.*)',
+        destinations: [ {
+          required: [ 'p' ],
+          path: '/withp'
+        }, {
+          required: [ 'q' ],
+          path: '/withoutp' } ]
+      }, {
+        source: '/src/x',
+        destinations: [ {
+          path: '/fallthrough'
+        } ]
+      }]);
+      assert.equal('/fallthrough', r.map('/src/x').path);
     });
   });
 });

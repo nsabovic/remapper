@@ -1,6 +1,6 @@
 {
   "name": "remapper",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Remap one URL to another",
   "author": "Nebojsa Sabovic <nsabovic@gmail.com>",
   "keywords": [
