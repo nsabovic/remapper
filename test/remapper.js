@@ -26,7 +26,7 @@ describe('Remapper', function() {
           path: '/#dest' } ]
       }]);
       assert.equal('/#dest', r.map('/src').path);
-      assert.equal(null, r.map('/unmatched'));
+      assert.deepEqual({}, r.map('/unmatched'));
     });
     it('toplevel required is respected', function() {
       r = new Remapper([{
@@ -39,9 +39,9 @@ describe('Remapper', function() {
       c2 = { 'knob1' : false };
       c3 = { };
       assert.equal('/dest', r.map('/src', c1).path);
-      assert.equal(null, r.map('/src', c2));
-      assert.equal(null, r.map('/src', c3));
-      assert.equal(null, r.map('/unmatched', c1));
+      assert.deepEqual({}, r.map('/src', c2));
+      assert.deepEqual({}, r.map('/src', c3));
+      assert.deepEqual({}, r.map('/unmatched', c1));
     });
     it('required flags can be nested', function() {
       r = new Remapper([{
@@ -54,9 +54,9 @@ describe('Remapper', function() {
       c2 = { 'knob1' : true, 'knob2': true };
       c3 = { };
       assert.equal('/dest', r.map('/src', c1).path);
-      assert.equal(null, r.map('/src', c2));
-      assert.equal(null, r.map('/src', c3));
-      assert.equal(null, r.map('/unmatched', c1));
+      assert.deepEqual({}, r.map('/src', c2));
+      assert.deepEqual({}, r.map('/src', c3));
+      assert.deepEqual({}, r.map('/unmatched', c1));
     });
     it('nested required is respected', function() {
       r = new Remapper([{
@@ -69,9 +69,9 @@ describe('Remapper', function() {
       c2 = { 'knob1' : false };
       c3 = { };
       assert.equal('/dest', r.map('/src', c1).path);
-      assert.equal(null, r.map('/src', c2));
-      assert.equal(null, r.map('/src', c3));
-      assert.equal(null, r.map('/unmatched', c1));
+      assert.deepEqual({}, r.map('/src', c2));
+      assert.deepEqual({}, r.map('/src', c3));
+      assert.deepEqual({}, r.map('/unmatched', c1));
     });
     it('supports embedding', function() {
       r = new Remapper([{
@@ -81,7 +81,17 @@ describe('Remapper', function() {
           path: '/dest/{p}' } ]
       }]);
       assert.equal('/dest/v', r.map('/src', {p:'v'}).path);
-      assert.equal(null, r.map('http://t.co/src'));
+      assert.deepEqual({}, r.map('http://t.co/src'));
+    });
+    it('supports multiple embeddings', function() {
+      r = new Remapper([{
+        source: '/src',
+        destinations: [ {
+          required: [ 'p', 'q' ],
+          path: '/dest/{p}/{q}' } ]
+      }]);
+      assert.equal('/dest/v/w', r.map('/src', {p:'v', q:'w'}).path);
+      assert.deepEqual({}, r.map('http://t.co/src'));
     });
     it('supports nested embedding', function() {
       r = new Remapper([{
@@ -92,7 +102,7 @@ describe('Remapper', function() {
             nested: '/dest/{p}' } } ]
       }]);
       assert.equal('/dest/v', r.map('/src', {p:'v'}).query.nested);
-      assert.equal(null, r.map('http://t.co/src'));
+      assert.deepEqual({}, r.map('http://t.co/src'));
     });
     it('supports regex replace in embedding', function() {
       r = new Remapper([{

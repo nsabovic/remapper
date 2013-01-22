@@ -49,4 +49,4 @@ Soo:
         var result = r.map(testUrl.path, testUrl);
         console.log(require('url').format(result));
 
-If there's no match, null is returned.
+If there's no match, {} is returned.
