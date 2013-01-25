@@ -69,7 +69,7 @@ describe('Remapper', function() {
       c2 = { 'knob1' : false };
       c3 = { };
       assert.equal('/dest', r.map('/src', c1).path);
-      assert.deepEqual({}, r.map('/src', c2));
+      assert.equal('/dest', r.map('/src', c2).path);
       assert.deepEqual({}, r.map('/src', c3));
       assert.deepEqual({}, r.map('/unmatched', c1));
     });
