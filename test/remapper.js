@@ -175,5 +175,29 @@ describe('Remapper', function() {
       }]);
       assert.equal('/fallthrough', r.map('/src/x').path);
     });
+    it('can use a different start regex expression', function() {
+      r = new Remapper([{
+        source: '/src',
+        destinations: [ {
+          path: '/aha'
+        } ]
+      }], {
+        startRegex: '^/prefix'
+      });
+      assert.equal('/aha', r.map('/prefix/src').path);
+      assert.deepEqual({}, r.map('/src'));
+    });
+    it('can use a different end regex expression', function() {
+      r = new Remapper([{
+        source: '/src',
+        destinations: [ {
+          path: '/aha'
+        } ]
+      }], {
+        finishRegex: '/end$'
+      });
+      assert.equal('/aha', r.map('/src/end').path);
+      assert.deepEqual({}, r.map('/src'));
+    });
   });
 });
