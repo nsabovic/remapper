@@ -1,4 +1,3 @@
-/*global describe:false it:false xit:false beforeEach:false afterEach:false */
 "use strict";
 
 var assert = require('assert');
@@ -22,6 +21,18 @@ describe('Remapper', function() {
     it('actually remaps', function() {
       r = new Remapper([{
         source: '/src',
+        host: 'test',
+        destinations: [ {
+          path: '/#dest' } ]
+      }]);
+      assert.equal('/#dest', r.map('/src').path);
+      assert.equal('test', r.map('/src').host);
+      assert.deepEqual({}, r.map('/unmatched'));
+    });
+    it('destination properties win', function() {
+      r = new Remapper([{
+        source: '/src',
+        path: '/#src',
         destinations: [ {
           path: '/#dest' } ]
       }]);
@@ -86,17 +97,21 @@ describe('Remapper', function() {
       assert.deepEqual({}, r.map('/src', c2));
       assert.deepEqual({}, r.map('/unmatched', c1));
     });
-    it('decorate function is called', function() {
+    it('dest decorate function is called after src decorate', function() {
       r = new Remapper([{
         source: '/src',
         destinations: [ {
           path: '/dest',
           decorate: function(i, out) {
-            out.path += i.ext;
-          } } ]
+            out.path += i.second;
+          }
+        } ],
+        decorate: function(i, out) {
+          out.path += i.first;
+        }
       }]);
-      c1 = { 'ext' : 1 };
-      assert.equal('/dest1', r.map('/src', c1).path);
+      c1 = { 'first' : 1, 'second': 2 };
+      assert.equal('/dest12', r.map('/src', c1).path);
     });
     it('supports embedding', function() {
       r = new Remapper([{
